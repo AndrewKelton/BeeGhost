@@ -3,6 +3,7 @@ import json
 from selenium.common.exceptions import InvalidSessionIdException
 import os
 from dotenv import load_dotenv
+from collections.abc import Sequence
 
 from BeeGhost.utils import BEE_GHOST_BANNER, print_no_username_error
 from BeeGhost.models.instagram import Instagram
@@ -11,14 +12,9 @@ from BeeGhost.models.x import X
 
 MAX_SESSION_CRASHES=10
 
-def main():
-    
-    load_dotenv()
-    
-    print(BEE_GHOST_BANNER)
-    
-    # arguments
-    parser = argparse.ArgumentParser(description="Main script that removes data associated with a social media account")
+def parse_args(argv : Sequence[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Delete likes, comments, reposts, etc. from social media accounts.")
     parser.add_argument(
         "platform",
         choices=["youtube", "instagram", "x"],
@@ -49,7 +45,15 @@ def main():
         help="Run the browser without displaying it"
     )
     
-    args = parser.parse_args()
+    return parser.parse_args(argv)
+
+
+def main(argv: Sequence[str] | None = None):
+    
+    print(BEE_GHOST_BANNER)
+    
+    load_dotenv()
+    args = parse_args(argv)
     
     print(f"Booting removal sequence for: {args.platform} {args.removal_type}")
     
@@ -91,6 +95,7 @@ def main():
                 
                 # check removal type first, since youtube module only supports deleting comments
                 if args.removal_type == 'comments': 
+                    
                     if youtube.login(): # 
                         youtube.remove_comments()
                     
@@ -131,7 +136,7 @@ def main():
                     if args.removal_type == 'comments':
                         instagram.remove_comments()
                     # if args.removal_type == 'reposts':
-                    #     remo
+                    #     instagram.remove_reposts() # wip
                     if args.removal_type == 'story_replies':
                         instagram.remove_story_replies()
                     
@@ -152,12 +157,12 @@ def main():
                 x = X(
                     username=username, 
                     password=password, 
-                    cookies=None, # cookies is actually bad w/ x
+                    cookies=None, # cookies doesn't do much in X
                     headless=args.headless
                 )
                 
                 if x.login():
-            
+                    
                     if args.removal_type == 'likes':
                         x.remove_likes()
                         
