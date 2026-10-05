@@ -44,7 +44,6 @@ class SocialMedia(ABC):
         except TimeoutException as e:
             print(f"Error: {e}", file=sys.stderr)
             return False
-        
             
     def refresh(self):
         """Refreshes the driver"""

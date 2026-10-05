@@ -1,3 +1,6 @@
+"""Command line interface for BeeGhost.
+"""
+
 import argparse
 import json
 from selenium.common.exceptions import InvalidSessionIdException
@@ -46,7 +49,6 @@ def parse_args(argv : Sequence[str]) -> argparse.Namespace:
     )
     
     return parser.parse_args(argv)
-
 
 def main(argv: Sequence[str] | None = None):
     
