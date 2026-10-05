@@ -21,7 +21,6 @@ class Instagram(SocialMedia):
     STORY_REPLIES_LINK = "https://www.instagram.com/your_activity/interactions/story_replies/"
     SAVED_LINK = "https://www.instagram.com/saved/all-posts/"
     LOGIN_LINK = "https://www.instagram.com/accounts/login/"
-    # REVIEWS_LINK = "your_activity/interactions/reviews"
     
     MAX_REQUESTS = 10
     
@@ -127,14 +126,19 @@ class Instagram(SocialMedia):
 
         print("Cookies saved.")
     
-    def remove_comments(self) -> bool:
+    def remove_comments(self, removal_type : str = "comments") -> bool:
         """Removes comments from associated Instagram account.
         
         Returns:
             bool: True if the removal was successful, False otherwise.
         """
         
-        self.navigate_to_url(self.COMMENTS_LINK)
+        if removal_type.lower() == "comments":
+            self.navigate_to_url(self.COMMENTS_LINK)
+        elif removal_type.lower() == "story replies":
+            self.navigate_to_url(self.STORY_REPLIES_LINK)
+        elif removal_type.lower() == "reposts":
+            self.navigate_to_url(self.REPOSTS_LINK)
         
         stop_event = threading.Event() # event flag
         start_quit_listener(stop_event=stop_event) # listen for 'quit' early termination
@@ -176,7 +180,7 @@ class Instagram(SocialMedia):
                         
                         if successful_deletion:
                             rateLimitChecker.record_request()
-                            print(f"successfully removed {num_comments} comments(s)")
+                            print(f"successfully removed {num_comments} {removal_type} (s)")
                             total_comment_counter = total_comment_counter + num_comments
                             success = True
                             
@@ -198,6 +202,24 @@ class Instagram(SocialMedia):
             print(f"removed {total_comment_counter} post(s)")
             return success
             
+    def remove_story_replies(self) -> bool:
+        """Removes story replies from associated Instagram account.
+                
+        Returns:
+            bool: True if the removal was successful, False otherwise.
+        """
+        
+        return self.remove_comments("story replies")
+            
+    def remove_reposts(self) -> bool:
+        """Removes reposts from associated Instagram account.
+                
+        Returns:
+            bool: True if the removal was successful, False otherwise.
+        """
+        
+        return self.remove_comments("reposts")
+    
     def remove_likes(self) -> bool:
         """Removes likes from associated Instagram account.
                 
@@ -267,146 +289,4 @@ class Instagram(SocialMedia):
                 
         finally:
             print(f"removed {total_likes_counter} post(s)")
-            return success
-            
-    def remove_story_replies(self) -> bool:
-        """Removes story replies from associated Instagram account.
-                
-        Returns:
-            bool: True if the removal was successful, False otherwise.
-        """
-        
-        self.navigate_to_url(self.STORY_REPLIES_LINK)
-        
-        stop_event = threading.Event() # event flag
-        start_quit_listener(stop_event=stop_event) # listen for 'quit' early termination
-        
-        rateLimitChecker = RateLimitChecker(max_requests=self.MAX_REQUESTS)
-        
-        total_story_replies_counter = 0 # counter for total content removed overall
-        success = True
-        
-        try:
-            while True:
-                # loops until all posts gone
-                
-                if not rateLimitChecker.is_allowed():
-                    stop_event.wait(rateLimitChecker.get_sleep_time())
-                
-                if stop_event.is_set():
-                    break
-
-                if not self.click_button("//div[span[normalize-space()='Select']]"):
-                    self.refresh()
-                    continue
-                
-                if stop_event.is_set():
-                    break
-                        
-                num_story_replies = self.select_content() # toggles checkbox of posts
-                
-                if num_story_replies > 0:
-                    
-                    try:
-                        # click removal confirmation
-                        self.click_button(ref=
-                            f"//span[text()='Delete']"
-                        )
-                        success = self.click_button(ref=
-                            f"//button[.//div[text()='Delete']]"
-                        )
-                        
-                        if success:
-                            rateLimitChecker.record_request()
-                            print(f"successfully removed {num_story_replies} story replies")
-                            total_story_replies_counter = total_story_replies_counter + num_story_replies
-                            success = False
-                            
-                        if not sleep_randomly(stop_event=stop_event, min_time=80):
-                            break
-                        
-                    except Exception as e:
-                        print(f"error: {e}")
-                        success = False
-                
-                elif num_story_replies == 0:
-                    success = True
-                    break # removed story replies from all posts
-                
-                elif num_story_replies == -1:
-                    print("Error: instagram.select_content() returned -1")
-                
-        finally:
-            print(f"removed {total_story_replies_counter} post(s)")
-            return success
-            
-    def remove_reposts(self) -> bool:
-        """Removes reposts from associated Instagram account.
-                
-        Returns:
-            bool: True if the removal was successful, False otherwise.
-        """
-        
-        self.navigate_to_url(self.REPOSTS_LINK)
-        
-        stop_event = threading.Event() # event flag
-        start_quit_listener(stop_event=stop_event) # listen for 'quit' early termination
-        
-        rateLimitChecker = RateLimitChecker(max_requests=self.MAX_REQUESTS)
-        
-        total_story_replies_counter = 0 # counter for total content removed overall
-        success = True
-        
-        try:
-            while True:
-                # loops until all posts gone
-                
-                if not rateLimitChecker.is_allowed():
-                    stop_event.wait(rateLimitChecker.get_sleep_time())
-                
-                if stop_event.is_set():
-                    break
-
-                self.click_button(
-                    "//div[span[normalize-space()='Select']]"
-                ) # click 'Select' button 
-                
-                if stop_event.is_set():
-                    break
-                        
-                num_story_replies = self.select_content() # toggles checkbox of posts
-                
-                if num_story_replies > 0:
-                    
-                    try:
-                        # click removal confirmation
-                        self.click_button(ref=
-                            f"//span[text()='Delete']"
-                        )
-                        success = self.click_button(ref=
-                            f"//button[.//div[text()='Delete']]"
-                        )
-                        
-                        if success:
-                            rateLimitChecker.record_request()
-                            print(f"successfully removed {num_story_replies} reposts")
-                            total_story_replies_counter = total_story_replies_counter + num_story_replies
-                            success = False
-                            
-                        if not sleep_randomly(stop_event=stop_event, min_time=80):
-                            break
-                        
-                    except Exception as e:
-                        print(f"error: {e}")
-                        success = False
-                
-                elif num_story_replies == 0:
-                    success = True
-                    break # removed reposts from all posts
-                
-                elif num_story_replies == -1:
-                    print("Error: instagram.select_content() returned -1")
-                
-        finally:
-            print(f"removed {total_story_replies_counter} post(s)")
             return success
