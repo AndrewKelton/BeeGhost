@@ -42,8 +42,8 @@ class SocialMedia(ABC):
             return True
 
         except TimeoutException as e:
-            traceback.print_exc()
-            # print(f"Error: {e}", file=sys.stderr)
+            # traceback.print_exc()
+            print(f"Error: {e}", file=sys.stderr)
             return False
         
             

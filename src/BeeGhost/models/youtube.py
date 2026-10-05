@@ -52,9 +52,10 @@ class YouTube(SocialMedia):
         email_box.send_keys(self.username)
         email_box.send_keys(Keys.RETURN)
         
-        input("press enter when you enter your passkey")
+        input("\npress enter when you enter your passkey")
         # TODO: Automatically enter the passkey
         # Maybe there is a file or something i can automate my fingerprint with?
+        print("\n")
         
         try:
             account = WebDriverWait(self.driver, 15).until(
@@ -172,18 +173,8 @@ class YouTube(SocialMedia):
                 
                 time.sleep(1.5)
 
-                # confirmation button may or may not pop up
-                try:
-                    confirm_delete = WebDriverWait(self.driver, 1).until(
-                        EC.element_to_be_clickable((
-                            By.XPATH,
-                            '//div[@role="button"][.//span[normalize-space()="Delete"]]'
-                        ))
-                    )
-                    confirm_delete.click()
-
-                except TimeoutException:
-                    self.refresh()
+                # confirmation button may or may not pop up, it's fine either way
+                self.click_button('//div[@role="button"][.//span[normalize-space()="Delete"]]')
                 
                 # this will tell us that the comment was actually deleted
                 if self.xpath_exists(xpath='//div[text()="1 item deleted"]'):

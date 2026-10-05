@@ -79,6 +79,17 @@ class Instagram(SocialMedia):
             time.sleep(2.5)
             
             return True
+        
+    def scroll(self):
+        """This will not work with scrolling Instagram interactions pages.
+        Instagram interactions pages have a scroll bar within a div.
+        """
+        # TODO: get the div id for the scroll bar from instagram 
+        
+        # last_height = self.driver.execute_script("return document.body.scrollHeight")
+        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        
+        time.sleep(2)
     
     def select_content(self) -> int:
         """Selects all content on an Instagram page by clicking each
@@ -143,9 +154,9 @@ class Instagram(SocialMedia):
                 if stop_event.is_set():
                     break
 
-                self.click_button(
-                    "//div[span[normalize-space()='Select']]"
-                )
+                if not self.click_button("//div[span[normalize-space()='Select']]"):
+                    self.refresh()
+                    continue
                 
                 if stop_event.is_set():
                     break
@@ -213,10 +224,10 @@ class Instagram(SocialMedia):
                 
                 if stop_event.is_set():
                     break
-
-                self.click_button(
-                    "//div[span[normalize-space()='Select']]"
-                ) # click 'Select' button 
+                
+                if not self.click_button("//div[span[normalize-space()='Select']]"):
+                    self.refresh()
+                    continue
                 
                 if stop_event.is_set():
                     break
@@ -285,9 +296,9 @@ class Instagram(SocialMedia):
                 if stop_event.is_set():
                     break
 
-                self.click_button(
-                    "//div[span[normalize-space()='Select']]"
-                ) # click 'Select' button 
+                if not self.click_button("//div[span[normalize-space()='Select']]"):
+                    self.refresh()
+                    continue
                 
                 if stop_event.is_set():
                     break
@@ -329,3 +340,73 @@ class Instagram(SocialMedia):
             print(f"removed {total_story_replies_counter} post(s)")
             return success
             
+    def remove_reposts(self) -> bool:
+        """Removes reposts from associated Instagram account.
+                
+        Returns:
+            bool: True if the removal was successful, False otherwise.
+        """
+        
+        self.navigate_to_url(self.REPOSTS_LINK)
+        
+        stop_event = threading.Event() # event flag
+        start_quit_listener(stop_event=stop_event) # listen for 'quit' early termination
+        
+        rateLimitChecker = RateLimitChecker(max_requests=self.MAX_REQUESTS)
+        
+        total_story_replies_counter = 0 # counter for total content removed overall
+        success = True
+        
+        try:
+            while True:
+                # loops until all posts gone
+                
+                if not rateLimitChecker.is_allowed():
+                    stop_event.wait(rateLimitChecker.get_sleep_time())
+                
+                if stop_event.is_set():
+                    break
+
+                self.click_button(
+                    "//div[span[normalize-space()='Select']]"
+                ) # click 'Select' button 
+                
+                if stop_event.is_set():
+                    break
+                        
+                num_story_replies = self.select_content() # toggles checkbox of posts
+                
+                if num_story_replies > 0:
+                    
+                    try:
+                        # click removal confirmation
+                        self.click_button(ref=
+                            f"//span[text()='Delete']"
+                        )
+                        success = self.click_button(ref=
+                            f"//button[.//div[text()='Delete']]"
+                        )
+                        
+                        if success:
+                            rateLimitChecker.record_request()
+                            print(f"successfully removed {num_story_replies} reposts")
+                            total_story_replies_counter = total_story_replies_counter + num_story_replies
+                            success = False
+                            
+                        if not sleep_randomly(stop_event=stop_event, min_time=80):
+                            break
+                        
+                    except Exception as e:
+                        print(f"error: {e}")
+                        success = False
+                
+                elif num_story_replies == 0:
+                    success = True
+                    break # removed reposts from all posts
+                
+                elif num_story_replies == -1:
+                    print("Error: instagram.select_content() returned -1")
+                
+        finally:
+            print(f"removed {total_story_replies_counter} post(s)")
+            return success
