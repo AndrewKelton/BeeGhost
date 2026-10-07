@@ -14,7 +14,7 @@ A social media automation toolkit providing a simple way to automate removing al
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/<my ting here>
+git clone https://github.com/AndrewKelton/BeeGhost
 ```
 
 2. **Install the required packages:**
