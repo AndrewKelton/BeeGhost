@@ -20,7 +20,7 @@ git clone https://github.com/AndrewKelton/BeeGhost
 2. **Install the required packages:**
 ```bash
 pip install -r requirements.txt
-pip install -e
+pip install -e ..
 ```
 
 ### Executing program
@@ -71,8 +71,4 @@ Andrew Kelton
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-* [Instagram Like Activity Deleter](https://gist.github.com/braunglasrakete/8a7cad3ecb135470c4b93d7223b0927e)
+This project is licensed under the MIT License - see the LICENSE file for details
