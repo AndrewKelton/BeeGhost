@@ -26,7 +26,7 @@ pip install -e .
 ### Executing program
 
 ```bash
-# Run BeeGhost to delete sepcific content on a specified platform 
+# Run BeeGhost to delete specific content on a specified platform 
 beeghost <platform> <content> <username> <password>
 ```
 
