@@ -20,7 +20,7 @@ git clone https://github.com/AndrewKelton/BeeGhost
 2. **Install the required packages:**
 ```bash
 pip install -r requirements.txt
-pip install -e ..
+pip install -e .
 ```
 
 ### Executing program
